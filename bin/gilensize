@@ -1,0 +1,22 @@
+#!/usr/bin/env ruby
+# == Synopsis
+# 
+# Processes text on standard input with Gilenson. Please feed it UTF-8!
+# 
+# == Usage
+# 
+#   cat myfile.txt | gilensize > output.txt
+#   
+# == Author
+#   Julik <me@julik.nl>
+
+$KCODE = 'u'
+require File.dirname(__FILE__) + '/../lib/rutils'
+require 'optparse'
+OptionParser.new do | p |
+ p.on(" -h", "--help") { require 'rdoc/usage'; RDoc::usage }
+end.parse!
+
+while st = gets do
+  puts Gilenson.new(st).to_html
+end
