@@ -1,3 +1,4 @@
+# -*- encoding: utf-8 -*-
 class Gilenson
   VERSION = '1.1.0'
   autoload :BlueClothExtra, File.dirname(__FILE__) + '/extras/bluecloth_extra'
