@@ -1,7 +1,7 @@
 # -*- encoding: utf-8 -*- 
 begin
   require 'redcloth'
-  raise LoadError, "need RedCloth 3.x" unless RedCloth::VERSION.to_s =~ /^3/
+  raise LoadError, "Need RedCloth 3.x to run this test" unless RedCloth::VERSION.to_s =~ /^3/
 
   # Интеграция с RedCloth - Textile.
   # Нужно иметь в виду что Textile осуществляет свою обработку типографики, которую мы подменяем!

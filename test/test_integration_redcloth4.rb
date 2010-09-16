@@ -1,7 +1,7 @@
 # -*- encoding: utf-8 -*- 
 begin
   require 'redcloth'
-  raise LoadError, "need RedCloth 4.x" unless RedCloth::VERSION.to_s =~ /^4/
+  raise LoadError, "Need RedCloth 4.x to run this test" unless RedCloth::VERSION.to_s =~ /^4/
 
   # Интеграция с RedCloth 4 - Textile.
   class Redcloth4IntegrationTest < Test::Unit::TestCase
