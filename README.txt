@@ -8,7 +8,7 @@
 Посвящается П.Г.Гиленсону[http://www.rudtp.ru/lib.php?book=172], благодаря которому русские правила тех.
 редактуры еще как минимум 20 лет останутся бессмысленно старомодными.
 
-Разработчики gilenson - {Julik}[http://julik.nl], {Mash}[http://imfo.ru], {Yaroslav Markin}[http://markin.net/]
+Разработчики gilenson - Julik, Mash, Yaroslav Markin.
 
 == ФУНКЦИИ
 
