@@ -1,6 +1,8 @@
 # -*- encoding: utf-8 -*-
+$KCODE = 'u' if RUBY_VERSION < '1.9.0'
+
 class Gilenson
-  VERSION = '1.1.1'
+  VERSION = '1.1.2'
   autoload :BlueClothExtra, File.dirname(__FILE__) + '/extras/bluecloth_extra'
   autoload :RedClothExtra, File.dirname(__FILE__) + '/extras/redcloth_extra'
   autoload :RDiscountExtra, File.dirname(__FILE__) + '/extras/rdiscount_extra'

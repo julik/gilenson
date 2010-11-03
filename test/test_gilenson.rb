@@ -1,7 +1,9 @@
 # -*- encoding: utf-8 -*- 
-$KCODE = 'u'
+$KCODE = 'u' if RUBY_VERSION < '1.9.0'
 require 'test/unit'
-require File.dirname(__FILE__) + '/../lib/gilenson'
+
+# Prepend a slash to workaround a debilifuckitation (domo arigato Ruby core!)
+require "./" + File.dirname(__FILE__) + '/../lib/gilenson'
 
 
 # Cюда идут наши тесты типографа. Мы содержим их отдельно поскольку набор тестов Типографицы нами не контролируется.
