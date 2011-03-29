@@ -1,7 +1,7 @@
 .autotest
 History.txt
 Manifest.txt
-README.txt
+README.rdoc
 Rakefile
 bin/gilensize
 lib/extras/bluecloth_extra.rb
