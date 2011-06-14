@@ -2,7 +2,7 @@
 $KCODE = 'u' if RUBY_VERSION < '1.9.0'
 
 class Gilenson
-  VERSION = '1.1.2'
+  VERSION = '1.2.0'
   autoload :BlueClothExtra, File.dirname(__FILE__) + '/extras/bluecloth_extra'
   autoload :RedClothExtra, File.dirname(__FILE__) + '/extras/redcloth_extra'
   autoload :RDiscountExtra, File.dirname(__FILE__) + '/extras/rdiscount_extra'
@@ -23,10 +23,7 @@ class Gilenson
      "emdash"    => true,    # длинное тире двумя минусами (151)
      "initials"  => true,    # тонкие шпации в инициалах
      "copypaste" => false,   # замена непечатных и "специальных" юникодных символов на entities
-     "(c)"       => true,    # обрабатывать знак копирайта
-     "(r)"       => true,
-     "(tm)"      => true,
-     "(p)"       => true,
+     "(c)" => true,    # обрабатывать знаки копирайтов и трейдмарков
      "acronyms"  => true,    # Акронимы с пояснениями - ЖЗЛ(Жизнь Замечатльных Людей)
      "+-"        => true,    # спецсимволы, какие - понятно
      "degrees"   => true,    # знак градуса
@@ -40,8 +37,16 @@ class Gilenson
      "skip_code" => true,    # при true не отрабатывать типографику внутри <code/>, <tt/>, CDATA
      "enforce_en_quotes" => false, # только латинские кавычки
      "enforce_ru_quotes" => false, # только русские кавычки (enforce_en_quotes при этом игнорируется)
+     "(r)"       => true, # DEPRECATED
+     "(tm)"      => true, # DEPRECATED
+     "(p)"       => true, # DEPRECATED
   }.freeze
-     
+  
+  #:stopdoc:
+  # Старые настройки которые больше не нужны - уйдут в следующей большой версии
+  # Нужны потому иначе будет брошена ошибка
+  #:startdoc:
+  
   # Глифы, использующиеся в подстановках по-умолчанию
   GLYPHS = {
     :quot       => "&#34;",     # quotation mark
@@ -233,7 +238,10 @@ class Gilenson
    
      # 3a. тире длинное
      process_emdash(text) if @settings["emdash"]
-   
+     
+     # 4. копимарки и трейдрайты
+     process_copymarks(text) if @settings["(c)"]
+     
      # 5. +/-
      process_plusmin(text) if @settings["+-"]
    
@@ -441,7 +449,7 @@ class Gilenson
      text.gsub!(/</, @lt)
      text.gsub!(/>/, @gt)
    end
-    
+  
    def process_span_instead_of_nobr(text)
      text.gsub!(/<nobr>/, '<span class="nobr">')
      text.gsub!(/<\/nobr>/, '</span>')
@@ -453,15 +461,23 @@ class Gilenson
     
    def process_emdash(text)
      text.gsub!( /(\s|;)\-\-(\s)/ui, '\1'+@mdash+'\2')
+   end
+    
+   def process_copymarks(text)
      # 4. (с)
-     text.gsub!(/\([сСcC]\)((?=\w)|(?=\s[0-9]+))/u, @copy) if @settings["(c)"]
+     # Можно конечно может быть и так
+     # https://github.com/daekrist/gilenson/commit/c3a96151239281dcef6140616133deb56a099d0f#L1R466
+     # но без тестов это позорище.
+     text.gsub!(/\([сСcC]\)[^\.,;:]/u) { |m| [@copy, m[-1..-1]].join }
+     
      # 4a. (r)
-     text.gsub!( /\(r\)/ui, '<sup>'+@reg+'</sup>') if @settings["(r)"]
-   
+     text.gsub!( /\(r\)/ui, '<sup>'+@reg+'</sup>')
+     
      # 4b. (tm)
-     text.gsub!( /\(tm\)|\(тм\)/ui, @trade) if @settings["(tm)"]
-     # 4c. (p)   
-     text.gsub!( /\(p\)/ui, @sect) if @settings["(p)"]
+     text.gsub!( /\(tm\)|\(тм\)/ui, @trade)
+     
+     # 4c. (p)
+     text.gsub!( /\(p\)/ui, @sect)
    end
    
    def process_ellipsises(text)

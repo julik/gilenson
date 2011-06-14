@@ -3,7 +3,7 @@ $KCODE = 'u' if RUBY_VERSION < '1.9.0'
 require 'test/unit'
 
 # Prepend a slash to workaround a debilifuckitation (domo arigato Ruby core!)
-require "./" + File.dirname(__FILE__) + '/../lib/gilenson'
+require File.expand_path(File.dirname(__FILE__)) + '/../lib/gilenson'
 
 
 # Cюда идут наши тесты типографа. Мы содержим их отдельно поскольку набор тестов Типографицы нами не контролируется.
@@ -84,6 +84,7 @@ class GilensonOwnTest < Test::Unit::TestCase
   end
   
   def test_specials
+    assert_equal '&#169;Кукуц', '(c)Кукуц'.gilensize
     assert_equal '&#169; 2002, &#169; 2003, &#169; 2004, &#169; 2005 &#8212; тоже без&#160;пробелов: &#169;2002, &#169;Кукуц. однако: варианты (а) и&#160;(с)', '(с) 2002, (С) 2003, (c) 2004, (C) 2005 -- тоже без пробелов: (с)2002, (c)Кукуц. однако: варианты (а) и (с)'.gilensize
     assert_equal '+5&#176;С, +7&#176;C, &#8211;5&#176;F', '+5^С, +17^C, -275^F'.gilensize
     assert_equal 'об&#160;этом подробнее &#8212; читай &#167;25', 'об этом подробнее -- читай (p)25'.gilensize
@@ -301,7 +302,7 @@ class GilensonOwnTest < Test::Unit::TestCase
   private
     # Проверить равны ли строки, и если нет то обьяснить какой кодпойнт отличается.
     # Совершенно необходимо для работы с различными пробелами.
-    def assert_equal_cp(reference, actual, msg = nil)
+    def assert_equal_cp(reference, actual, msg = "Should be the same codepoint")
       (assert(true, msg); return) if (reference == actual)
       
       reference_cp, actual_cp = [reference, actual].map{|t| t.unpack("U*") }
