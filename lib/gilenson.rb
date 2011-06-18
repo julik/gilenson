@@ -1,8 +1,9 @@
 # -*- encoding: utf-8 -*-
+old_kcode = $KCODE
 $KCODE = 'u' if RUBY_VERSION < '1.9.0'
 
 class Gilenson
-  VERSION = '1.2.0'
+  VERSION = '1.2.1'
   autoload :BlueClothExtra, File.dirname(__FILE__) + '/extras/bluecloth_extra'
   autoload :RedClothExtra, File.dirname(__FILE__) + '/extras/redcloth_extra'
   autoload :RDiscountExtra, File.dirname(__FILE__) + '/extras/rdiscount_extra'
@@ -468,7 +469,7 @@ class Gilenson
      # Можно конечно может быть и так
      # https://github.com/daekrist/gilenson/commit/c3a96151239281dcef6140616133deb56a099d0f#L1R466
      # но без тестов это позорище.
-     text.gsub!(/\([сСcC]\)[^\.,;:]/u) { |m| [@copy, m[-1..-1]].join }
+     text.gsub!(/\([сСcC]\)[^\.\,\;\:]/ui) { |m| [@copy, m.split(//u)[-1..-1]].join }
      
      # 4a. (r)
      text.gsub!( /\(r\)/ui, '<sup>'+@reg+'</sup>')
@@ -594,3 +595,5 @@ class Gilenson
 end
 
 Object::String.send(:include, Gilenson::StringFormatting)
+
+$KCODE = old_kcode if RUBY_VERSION < '1.9.0'

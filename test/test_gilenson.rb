@@ -1,16 +1,27 @@
 # -*- encoding: utf-8 -*- 
-$KCODE = 'u' if RUBY_VERSION < '1.9.0'
 require 'test/unit'
 
-# Prepend a slash to workaround a debilifuckitation (domo arigato Ruby core!)
-require File.expand_path(File.dirname(__FILE__)) + '/../lib/gilenson'
+class A_TestRequireDoesNotReconfigureKcode < Test::Unit::TestCase
+  if RUBY_VERSION < '1.9.0'
+    def test_require_does_not_reconfigure
+      $KCODE = "NONE"
+      # Prepend a slash to workaround a debilifuckitation (domo arigato Ruby core!)
+      require File.expand_path(File.dirname(__FILE__)) + '/../lib/gilenson'
+      assert_equal "NONE", $KCODE, "$KCODE should have been reset"
+    end
+  else
+    require File.expand_path(File.dirname(__FILE__)) + '/../lib/gilenson'
+  end
+end
 
+$KCODE = 'u' if RUBY_VERSION < '1.9.0'
 
 # Cюда идут наши тесты типографа. Мы содержим их отдельно поскольку набор тестов Типографицы нами не контролируется.
 # Когда у рутилей появятся собственные баги под каждый баг следует завести тест
 class GilensonOwnTest < Test::Unit::TestCase
   
   def setup
+    $KCODE = 'u' if RUBY_VERSION < '1.9.0'
     @gilenson = Gilenson.new
   end
 
