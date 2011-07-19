@@ -1,6 +1,8 @@
 # -*- encoding: utf-8 -*-
-old_kcode = $KCODE
-$KCODE = 'u' if RUBY_VERSION < '1.9.0'
+if RUBY_VERSION < '1.9.0'
+  old_kcode = $KCODE
+  $KCODE = 'u'
+end
 
 class Gilenson
   VERSION = '1.2.1'
