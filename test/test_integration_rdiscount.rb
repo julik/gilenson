@@ -5,7 +5,7 @@ begin
   # Интеграция с Rdiscount - Markdown
   # Сам Markdown никакой обработки типографики не производит (это делает RubyPants, но вряд ли его кто-то юзает на практике)
   class RdiscountIntegrationTest < Test::Unit::TestCase
-    C = Gilenson::RDiscountExtra
+    C = ::Gilenson::RDiscountExtra
   
     def test_integration_markdown
     
@@ -13,6 +13,6 @@ begin
         C.new('И вот "они пошли туда", и шли шли шли').to_html
     end
   end
-rescue LoadError => boom
+rescue LoadError, NameError => boom
   STDERR.puts(boom.message)
 end
