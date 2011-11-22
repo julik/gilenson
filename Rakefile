@@ -1,12 +1,38 @@
+# -*- encoding: utf-8 -*-
 # -*- ruby -*-
+$KCODE = 'u' if RUBY_VERSION < '1.9.0'
 
-require 'hoe'
-r = Hoe.spec 'gilenson' do | p |
-  Hoe::RUBY_FLAGS.gsub!(/^\-w/, '') # No thanks
+require 'rubygems'
+require 'jeweler'
+require './lib/gilenson'
+
+Jeweler::Tasks.new do |gem|
+  gem.version = Gilenson::VERSION
+  gem.name = "gilenson"
+  gem.summary = "Гиленсон - улучшайзер русской типографики"
+  gem.email = "me@julik.nl"
+  gem.homepage = "http://github.com/julik/gilenson"
+  gem.authors = ["Julik Tarkhanov"]
+  gem.license = 'MIT'
+  gem.executables = %w( gilensize )
   
-  p.developer('Julik Tarkhanov', 'me@julik.nl')
-  p.readme_file = 'README.rdoc'
-  p.extra_rdoc_files  = FileList['*.rdoc'] + FileList['*.txt']
+  # Deps
+  gem.add_development_dependency "jeweler"
+  gem.add_development_dependency "rake"
+  gem.add_development_dependency "maruku"
+  gem.add_development_dependency "redcloth"
+  gem.add_development_dependency "bluecloth"
 end
+Jeweler::RubygemsDotOrgTasks.new
+
+require 'rake/testtask'
+desc "Run all tests"
+Rake::TestTask.new("test") do |t|
+  t.libs << "test"
+  t.pattern = 'test/**/test_*.rb'
+  t.verbose = true
+end
+
+task :default => [ :test ]
 
 # vim: syntax=ruby
