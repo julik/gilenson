@@ -19,9 +19,9 @@ Jeweler::Tasks.new do |gem|
   # Deps
   gem.add_development_dependency "jeweler"
   gem.add_development_dependency "rake"
-  gem.add_development_dependency "maruku"
-  gem.add_development_dependency "redcloth"
-  gem.add_development_dependency "bluecloth"
+  gem.add_development_dependency "maruku", "~> 0.6"
+  gem.add_development_dependency  "RedCloth", "~> 4.2"
+  gem.add_development_dependency "blue_cloth", "~> 2.0"
 end
 Jeweler::RubygemsDotOrgTasks.new
 
