@@ -9,7 +9,7 @@ Gem::Specification.new do |s|
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Julik Tarkhanov"]
-  s.date = "2011-11-22"
+  s.date = "2011-11-26"
   s.email = "me@julik.nl"
   s.executables = ["gilensize"]
   s.extra_rdoc_files = [
@@ -48,12 +48,14 @@ Gem::Specification.new do |s|
     if Gem::Version.new(Gem::VERSION) >= Gem::Version.new('1.2.0') then
       s.add_development_dependency(%q<jeweler>, [">= 0"])
       s.add_development_dependency(%q<rake>, [">= 0"])
+      s.add_development_dependency(%q<rdiscount>, [">= 0"])
       s.add_development_dependency(%q<maruku>, ["~> 0.6"])
       s.add_development_dependency(%q<RedCloth>, ["~> 4.2"])
       s.add_development_dependency(%q<bluecloth>, ["~> 2.0"])
     else
       s.add_dependency(%q<jeweler>, [">= 0"])
       s.add_dependency(%q<rake>, [">= 0"])
+      s.add_dependency(%q<rdiscount>, [">= 0"])
       s.add_dependency(%q<maruku>, ["~> 0.6"])
       s.add_dependency(%q<RedCloth>, ["~> 4.2"])
       s.add_dependency(%q<bluecloth>, ["~> 2.0"])
@@ -61,6 +63,7 @@ Gem::Specification.new do |s|
   else
     s.add_dependency(%q<jeweler>, [">= 0"])
     s.add_dependency(%q<rake>, [">= 0"])
+    s.add_dependency(%q<rdiscount>, [">= 0"])
     s.add_dependency(%q<maruku>, ["~> 0.6"])
     s.add_dependency(%q<RedCloth>, ["~> 4.2"])
     s.add_dependency(%q<bluecloth>, ["~> 2.0"])

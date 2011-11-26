@@ -1,0 +1,12 @@
+.DS_Store
+**/.DS_Store
+pkg
+doc
+coverage
+coverage.*
+*.autosave
+*.rbc
+.idea
+.yardoc
+Gemfile.lock
+**/*.log
