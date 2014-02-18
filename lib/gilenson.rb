@@ -34,7 +34,6 @@ class Gilenson
      "spacing"   => true,    # запятые и пробелы, перестановка
      "phones"    => true,    # обработка телефонов
      "html"      => true,    # разрешение использования тагов html
-     "de_nobr"   => false,   # при true все <nobr/> заменяются на <span class="nobr"/>
      "raw_output" => false,  # выводить UTF-8 вместо entities
      "skip_attr" => false,   # при true не отрабатывать типографику в атрибутах тегов
      "skip_code" => true,    # при true не отрабатывать типографику внутри <code/>, <tt/>, CDATA
@@ -272,9 +271,6 @@ class Gilenson
      # БЕСКОНЕЧНОСТЬ. Вставляем таги обратно.
      reinsert_fragments(text, tags) if @skip_tags
    
-     # фуф, закончили.
-     process_span_instead_of_nobr(text) if @settings["de_nobr"]
-   
      # заменяем entities на истинные символы
      process_raw_output(text) if @settings["raw_output"]
      
@@ -453,11 +449,6 @@ class Gilenson
      text.gsub!(/>/, @gt)
    end
   
-   def process_span_instead_of_nobr(text)
-     text.gsub!(/<nobr>/, '<span class="nobr">')
-     text.gsub!(/<\/nobr>/, '</span>')
-   end
-    
    def process_dash(text)
      text.gsub!( /(\s|;)\-(\s)/ui, '\1'+@ndash+'\2')
    end

@@ -74,7 +74,6 @@ Gilenson базируется на коде Typografica[http://pixel-apes.com/ty
   "spacing" - запятые и пробелы, перестановка
   "phones" - обработка телефонов
   "html" - при false - запрет использования тагов html
-  "de_nobr" - при true все <nobr/> заменяются на <span class="nobr"/>
   "raw_output" - (по умолчанию false) - при true вместо entities выводятся UTF-символы.
   Это нужно чтобы обработанный текст верстать на бумаге.
   "skip_attr" - (по умолчанию false) - при true не отрабатывать типографику в атрибутах тегов (title, alt)
