@@ -195,8 +195,12 @@ class GilensonOwnTest < Test::Unit::TestCase
   end
   
   def test_marker_bypass
-    assert_equal "<p><span class=\"nobr\">МИЭЛЬ-Недвижимость</span></p>", "<p>МИЭЛЬ-Недвижимость</p>".gilensize
-    assert_equal "<p><span class=\"nobr\">МИЭЛЬ-Недвижимость</span></p>", "<p><span class=\"nobr\">МИЭЛЬ-Недвижимость</span></p>".gilensize
+    assert_equal "<p><span class=\"nobr\">МИЭЛЬ-Недвижимость</span></p>",
+      "<p>МИЭЛЬ-Недвижимость</p>".gilensize,
+      "Секция nobr должна быть проставлена"
+    assert_equal "<p><span class=\"nobr\">МИЭЛЬ-Недвижимость</span></p>",
+      "<p><span class=\"nobr\">МИЭЛЬ-Недвижимость</span></p>".gilensize,
+      "Секция nobr должна быть проставлена единожды"
   end
   
   def test_skip_code
@@ -403,7 +407,7 @@ class GilensonConfigurationTest < Test::Unit::TestCase
     assert @gilenson.configure!(:raw_output=>true)    
   end
   
-  def test_explicit_nobr
+  def test_customized_nobr
     @gilenson.glyph[:nob_open] = '[NOB]'
     @gilenson.glyph[:nob_close] = '[NOBC]'
     assert_equal '[NOB]3&#8211;12&#8211;30[NOBC]', @gilenson.process('3-12-30')
