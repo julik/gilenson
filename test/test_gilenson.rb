@@ -196,6 +196,7 @@ class GilensonOwnTest < Test::Unit::TestCase
   
   def test_marker_bypass
     assert_equal "<p><span class=\"nobr\">МИЭЛЬ-Недвижимость</span></p>", "<p>МИЭЛЬ-Недвижимость</p>".gilensize
+    assert_equal "<p><span class=\"nobr\">МИЭЛЬ-Недвижимость</span></p>", "<p><span class=\"nobr\">МИЭЛЬ-Недвижимость</span></p>".gilensize
   end
   
   def test_skip_code
