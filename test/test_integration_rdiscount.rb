@@ -14,5 +14,5 @@ begin
     end
   end
 rescue LoadError, NameError => boom
-  STDERR.puts(boom.message)
+  $stderr.puts("COULD NOT RUN INTEGRATION TEST: #{boom.message}")
 end
