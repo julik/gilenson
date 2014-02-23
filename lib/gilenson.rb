@@ -1,8 +1,5 @@
 # -*- encoding: utf-8 -*-
-if RUBY_VERSION < '1.9.0'
-  old_kcode = $KCODE
-  $KCODE = 'u'
-end
+require "nokogiri"
 
 class Gilenson
   attr_accessor :glyph
@@ -146,6 +143,8 @@ class Gilenson
 
    PROTECTED_SETTINGS = [ :raw_output ] #:nodoc:
 
+   SKIP_CODE_TAGS = ["code", "tt"]
+
    def initialize(*args)
      @_text = args[0].is_a?(String) ? args[0] : ''
      setup_default_settings!
@@ -179,10 +178,6 @@ class Gilenson
    # Обрабатывает текст, присвоенный форматтеру при создании и возвращает результат обработки
    def to_html
      return '' unless @_text
-
-     # NOTE: strip is Unicode-space aware on 1.9.1, so here we simulate that
-     text = @_text.gsub(/[#{UNICODE_WHITESPACE}]\z/, '').gsub(/\A[#{UNICODE_WHITESPACE}]/, '')
-
      # -6. Подмухляем таблицу глифов, если нам ее передали
      glyph_table = glyph.dup
 
@@ -197,8 +192,39 @@ class Gilenson
        instance_variable_set("@#{ki}", wi)
      end
 
+     html = Nokogiri::HTML.fragment(@_text)
+
+     process_children(html)
+
+     html.to_html
+   end
+
+   # Рекурсивно проезжаемся по всему содержимому фрагмента, обрабатывая только текстовые
+   # ноды.
+   def process_children(node, process_node = true)
+     process_node(node) if node.name == 'text'
+
+     node.children.each do |node|
+       process_children(node)
+     end
+   end
+
+   # TODO: Компилировать метод на основании настроек, чтоб избежать проверок настроек для каждой ноды
+   def process_node(node)
+     # Пропускаем если выключена обработка кода
+     if @settings['skip_code']
+       return if SKIP_CODE_TAGS.include? node.parent.name
+       return if node.cdata?
+     end
+
+     @current_node = node
+
+     text = node.text
+
+     text = text.gsub(/[#{UNICODE_WHITESPACE}]\z/, '').gsub(/\A[#{UNICODE_WHITESPACE}]/, '')
+
      # -4. запрет тагов html
-     process_escape_html(text) unless @settings["html"]
+     #process_escape_html(text) unless @settings["html"]
 
      # -3. Никогда (вы слышите?!) не пущать лабуду &#not_correct_number;
      FORBIDDEN_NUMERIC_ENTITIES.dup.each_pair do | key, rep |
@@ -210,9 +236,6 @@ class Gilenson
 
      # -1. Замена &entity_name; на входе ('&nbsp;' => '&#160;' и т.д.)
      process_html_entities(text)
-
-     # 0. Вырезаем таги
-     tags = lift_ignored_elements(text) if @skip_tags
 
      # 1. Запятые и пробелы
      process_spacing(text) if @settings["spacing"]
@@ -262,15 +285,13 @@ class Gilenson
      # 9. Акронимы от Текстиля
      process_acronyms(text) if @settings["acronyms"]
 
-     # БЕСКОНЕЧНОСТЬ. Вставляем таги обратно.
-     reinsert_fragments(text, tags) if @skip_tags
-
      # заменяем entities на истинные символы
      process_raw_output(text) if @settings["raw_output"]
 
-     text.strip
-   end
+     text.strip!
 
+     node.native_content = text
+   end
 
    # Применяет отдельный фильтр к text и возвращает результат. Например:
    #  formatter.apply(:wordglue, "Вот так") => "Вот&#160;так"
@@ -290,7 +311,6 @@ class Gilenson
    private
 
    def setup_default_settings!
-      @skip_tags = true;
       @ignore = /notypo/ # regex, который игнорируется. Этим надо воспользоваться для обработки pre и code
 
       @glueleft =  ['рис.', 'табл.', 'см.', 'им.', 'ул.', 'пер.', 'кв.', 'офис', 'оф.', 'г.']
@@ -329,11 +349,6 @@ class Gilenson
                     ]]
    end
 
-   # Позволяет получить процедуру, при вызове возвращающую значение глифа
-#   def lookup(glyph_to_lookup)
-#     return Proc.new { g[glyph_to_lookup] }
-#   end
-
    # Подставляет "символы" (двоеточие + имя глифа) на нужное значение глифа заданное в данном форматтере
    def substitute_glyphs_in_string(str)
      re = str.dup
@@ -354,7 +369,6 @@ class Gilenson
    end
 
    def accept_configuration_arguments!(args_hash)
-
      # Специальный случай - :all=>true|false
      if args_hash.has_key?(:all)
        if args_hash[:all]
@@ -371,45 +385,6 @@ class Gilenson
        args_hash.each_pair do | key, value |
          @settings[key.to_s] = (value ? true : false)
        end
-     end
-   end
-
-   # Вынимает игнорируемые фрагменты и заменяет их маркером, выполняет переданный блок и вставляет вынутое на место
-   def lifting_fragments(text, &block)
-     lifted = lift_ignored_elements(text)
-       yield
-     reinsert_fragments(text, lifted)
-   end
-
-   #Вынимает фрагменты из текста и возвращает массив с фрагментами
-   def lift_ignored_elements(text)
-    #     re =  /<\/?[a-z0-9]+("+ # имя тага
-     #                              "\s+("+ # повторяющая конструкция: хотя бы один разделитель и тельце
-     #                                     "[a-z]+("+ # атрибут из букв, за которым может стоять знак равенства и потом
-     #                                              "=((\'[^\']*\')|(\"[^\"]*\")|([0-9@\-_a-z:\/?&=\.]+))"+ #
-     #                                           ")?"+
-     #                                  ")?"+
-     #                            ")*\/?>|\xA2\xA2[^\n]*?==/i;
-
-     re_skipcode = '((<(code|tt)[ >](.*?)<\/(code|tt)>)|(<!\[CDATA\[(.*?)\]\]>))|' if @settings['skip_code']
-     re =  /(#{re_skipcode}<\/?[a-z0-9]+(\s+([a-z]+(=((\'[^\']*\')|(\"[^\"]*\")|([0-9@\-_a-z:\/?&=\.]+)))?)?)*\/?>)/uim
-     tags = text.scan(re).map{ |tag| tag[0] } # первая группа!
-     text.gsub!(re, @mark_tag) #маркер тега, мы используем Invalid UTF-sequence для него
-     return tags
-   end
-
-   def reinsert_fragments(text, fragments)
-     fragments.each do |fragment|
-       fragment.gsub!(/ (href|src|data)=((?:(\')([^\']*)(\'))|(?:(\")([^\"]*)(\")))/uim) do
-         " #{$1}=" + $2.gsub(/&(?!(#0*38)|(amp);)/, @amp)
-       end # unless @settings['raw_output'] -- делать это надо всегда (mash)
-
-       unless @settings['skip_attr']
-         fragment.gsub!(/ (title|alt)=((?:(\')([^\']*)(\'))|(?:(\")([^\"]*)(\")))/uim) do
-           " #{$1}=#{$3}" + self.process($4.to_s) + "#{$5}#{$6}" + self.process($7.to_s) + "#{$8}"
-         end
-       end
-       text.sub!(@mark_tag, fragment)
      end
    end
 
@@ -527,7 +502,6 @@ class Gilenson
      @glueleft.each { | i |  text.gsub!( /(\s)(#{i})(\s+)/sui, '\1\2' + @nbsp) }
 
      @glueright.each { | i | text.gsub!( /(\s)(#{i})(\s+)/sui, @nbsp+'\2\3') }
-
    end
 
    def process_phones(text)
@@ -543,7 +517,7 @@ class Gilenson
        text.gsub!(acronym, '\1%s(\2)' % @thinsp)
      else
        text.gsub!(acronym) do
-         expl = $2.to_s; process_escape_html(expl)
+         expl = $2.to_s
          "<acronym title=\"#{expl}\">#{$1}</acronym>"
        end
      end
@@ -582,5 +556,3 @@ class Gilenson
 end
 
 Object::String.send(:include, Gilenson::StringFormatting)
-
-$KCODE = old_kcode if RUBY_VERSION < '1.9.0'

@@ -1,27 +1,28 @@
 # -*- encoding: utf-8 -*-
 require 'test/unit'
+require "gilenson"
 
-class A_TestRequireDoesNotReconfigureKcode < Test::Unit::TestCase
-  if RUBY_VERSION < '1.9.0'
-    def test_require_does_not_reconfigure
-      $KCODE = "NONE"
-      # Prepend a slash to workaround a debilifuckitation (domo arigato Ruby core!)
-      require File.expand_path(File.dirname(__FILE__)) + '/../lib/gilenson'
-      assert_equal "NONE", $KCODE, "$KCODE should have been reset"
-    end
-  else
-    require File.expand_path(File.dirname(__FILE__)) + '/../lib/gilenson'
+# Никто не читает предупреждений, но я напишу:
+#
+# обязательно включите отображение «невидимых» символов в вашем редакторе исходного кода.
+#
+# Иначе вы не заметите эти смешные неразрывные пробелы, тонкие, толстые шпации и многие
+# другие слова, о существовании которых вы скорее всего никогда не подозревали.
+#
+# Неразрывный пробел — ' '
+# Тонкая шпация — ' '
+
+class Test::Unit::TestCase
+  # Пока точно не решено что делать с entities в погонах, не будем перелопачивать
+  # тесты. Да и с entities несколько проще, чем с чистым юникодом.
+  def assert_equal_entites(actual, expected)
+    actual = Nokogiri::HTML.fragment(actual).to_html
+    assert_equal(actual, expected)
   end
 end
 
-$KCODE = 'u' if RUBY_VERSION < '1.9.0'
-
-# Cюда идут наши тесты типографа. Мы содержим их отдельно поскольку набор тестов Типографицы нами не контролируется.
-# Когда у рутилей появятся собственные баги под каждый баг следует завести тест
 class GilensonOwnTest < Test::Unit::TestCase
-
   def setup
-    $KCODE = 'u' if RUBY_VERSION < '1.9.0'
     @gilenson = Gilenson.new
   end
 
@@ -69,8 +70,8 @@ class GilensonOwnTest < Test::Unit::TestCase
   end
 
   def test_address
-    assert_equal 'табл.&#160;2, рис.&#160;2.10', 'табл. 2, рис. 2.10'.gilensize
-    assert_equal 'офис&#160;415, оф.340, д.5, ул.&#160;Народной Воли, пл. Малышева', 'офис 415, оф.340, д.5, ул. Народной Воли, пл. Малышева'.gilensize
+    assert_equal_entites 'табл.&#160;2, рис.&#160;2.10', 'табл. 2, рис. 2.10'.gilensize
+    assert_equal_entites 'офис&#160;415, оф.340, д.5, ул.&#160;Народной Воли, пл. Малышева', 'офис 415, оф.340, д.5, ул. Народной Воли, пл. Малышева'.gilensize
   end
 
   def test_html_entities_replace
@@ -95,77 +96,72 @@ class GilensonOwnTest < Test::Unit::TestCase
   end
 
   def test_specials
-    assert_equal '&#169;Кукуц', '(c)Кукуц'.gilensize
-    assert_equal '&#169; 2002, &#169; 2003, &#169; 2004, &#169; 2005 &#8212; тоже без&#160;пробелов: &#169;2002, &#169;Кукуц. однако: варианты (а) и&#160;(с)', '(с) 2002, (С) 2003, (c) 2004, (C) 2005 -- тоже без пробелов: (с)2002, (c)Кукуц. однако: варианты (а) и (с)'.gilensize
-    assert_equal '+5&#176;С, +7&#176;C, &#8211;5&#176;F', '+5^С, +17^C, -275^F'.gilensize
-    assert_equal 'об&#160;этом подробнее &#8212; читай &#167;25', 'об этом подробнее -- читай (p)25'.gilensize
-    assert_equal 'один же&#160;минус &#8211; краткое тире', 'один же минус - краткое тире'.gilensize
-    assert_equal 'Sharpdesign&#8482;, Microsoft<sup>&#174;</sup>', 'Sharpdesign(tm), Microsoft(r)'.gilensize
+    assert_equal_entites '&#169;Кукуц', '(c)Кукуц'.gilensize
+    assert_equal_entites '&#169; 2002, &#169; 2003, &#169; 2004, &#169; 2005 &#8212; тоже без&#160;пробелов: &#169;2002, &#169;Кукуц. однако: варианты (а) и&#160;(с)', '(с) 2002, (С) 2003, (c) 2004, (C) 2005 -- тоже без пробелов: (с)2002, (c)Кукуц. однако: варианты (а) и (с)'.gilensize
+    assert_equal_entites '+5&#176;С, +7&#176;C, &#8211;5&#176;F', '+5^С, +17^C, -275^F'.gilensize
+    assert_equal_entites 'об&#160;этом подробнее &#8212; читай &#167;25', 'об этом подробнее -- читай (p)25'.gilensize
+    assert_equal_entites 'один же&#160;минус &#8211; краткое тире', 'один же минус - краткое тире'.gilensize
+    assert_equal_entites 'Sharpdesign&#8482;, Microsoft<sup>&#174;</sup>', 'Sharpdesign(tm), Microsoft(r)'.gilensize
   end
 
   def test_breaking
-    assert_equal 'скажи, мне, ведь не&#160;даром! Москва, клеймённая пожаром. Французу отдана', 'скажи ,мне, ведь не даром !Москва, клеймённая пожаром .Французу отдана'.gilensize
-    assert_equal 'so&#160;be it, my&#160;liege. Tiny dwellers roam thru midnight! Hell raised, the&#160;Balrog is&#160;hiding in&#160;your backyard!', 'so be it ,my liege .Tiny dwellers roam thru midnight !Hell raised, the Balrog is hiding in your backyard!'.gilensize
-    assert_equal 'при&#160;установке командой строки в&#160;?page=help <span class="nobr">бла-бла-бла-бла</span>', 'при установке командой строки в ?page=help бла-бла-бла-бла'.gilensize
-    assert_equal 'как&#160;интересно будет переноситься со&#160;строки на&#160;строку <span class="nobr">что-то</span> разделённое дефисом, ведь дефис тот&#160;тоже ведь из&#160;наших. <span class="nobr">Какие-то</span> браузеры думают, что&#160;следует переносить и&#160;его&#8230;', 'как интересно будет переноситься со строки на строку что-то разделённое дефисом, ведь дефис тот тоже ведь из наших. Какие-то браузеры думают, что следует переносить и его...'.gilensize
+    assert_equal_entites 'скажи, мне, ведь не&#160;даром! Москва, клеймённая пожаром. Французу отдана', 'скажи ,мне, ведь не даром !Москва, клеймённая пожаром .Французу отдана'.gilensize
+    assert_equal_entites 'so&#160;be it, my&#160;liege. Tiny dwellers roam thru midnight! Hell raised, the&#160;Balrog is&#160;hiding in&#160;your backyard!', 'so be it ,my liege .Tiny dwellers roam thru midnight !Hell raised, the Balrog is hiding in your backyard!'.gilensize
+    assert_equal_entites 'при&#160;установке командой строки в&#160;?page=help <span class="nobr">бла-бла-бла-бла</span>', 'при установке командой строки в ?page=help бла-бла-бла-бла'.gilensize
+    assert_equal_entites 'как&#160;интересно будет переноситься со&#160;строки на&#160;строку <span class="nobr">что-то</span> разделённое дефисом, ведь дефис тот&#160;тоже ведь из&#160;наших. <span class="nobr">Какие-то</span> браузеры думают, что&#160;следует переносить и&#160;его&#8230;', 'как интересно будет переноситься со строки на строку что-то разделённое дефисом, ведь дефис тот тоже ведь из наших. Какие-то браузеры думают, что следует переносить и его...'.gilensize
   end
 
   def test_forced_quotes
-    assert_equal 'кавычки &#171;расставлены&#187; &#8220;in a&#160;chaotic order&#8221;',
+    assert_equal_entites 'кавычки &#171;расставлены&#187; &#8220;in a&#160;chaotic order&#8221;',
       'кавычки "расставлены" "in a chaotic order"'.gilensize
-    assert_equal 'кавычки &#8220;расставлены&#8221; &#8220;in a&#160;chaotic order&#8221;',
+    assert_equal_entites 'кавычки &#8220;расставлены&#8221; &#8220;in a&#160;chaotic order&#8221;',
       'кавычки "расставлены" "in a chaotic order"'.gilensize(:enforce_en_quotes => true)
-    assert_equal 'кавычки &#171;расставлены&#187; &#171;in a&#160;chaotic order&#187;',
+    assert_equal_entites 'кавычки &#171;расставлены&#187; &#171;in a&#160;chaotic order&#187;',
       'кавычки "расставлены" "in a chaotic order"'.gilensize(:enforce_ru_quotes => true)
   end
 
-#def test_quotes_and_inch
-#  assert_equal "&#171;This one&#160;is&#160;12&#8342;&#187;", '"This one is 12""'.gilensize
-#end
-
   def test_quotes
-    assert_equal 'english &#8220;quotes&#8221; should be&#160;quite like this', 'english "quotes" should be quite like this'.gilensize
-    assert_equal 'русские же&#160;&#171;оформляются&#187; подобным образом', 'русские же "оформляются" подобным образом'.gilensize
-    assert_equal 'кавычки &#171;расставлены&#187; &#8220;in a&#160;chaotic order&#8221;', 'кавычки "расставлены" "in a chaotic order"'.gilensize
-    assert_equal 'диагональ моего монитора &#8212; 17&#8243;, а&#160;размер пениса &#8212; 1,5&#8243;', 'диагональ моего монитора -- 17", а размер пениса -- 1,5"'.gilensize
-    assert_equal 'в&#160;толщину, &#171;вложенные &#8220;quotes&#8221; вот&#160;так&#187;, &#8220;or it&#160;&#171;будет вложено&#187; elsewhere&#8221;', 'в толщину, "вложенные "quotes" вот так", "or it "будет вложено" elsewhere"'.gilensize
-    assert_equal '&#8220;complicated &#171;кавычки&#187;, &#171;странные &#8220;includements&#8221; кавычек&#187;', '"complicated "кавычки", "странные "includements" кавычек"'.gilensize
-    assert_equal '&#8220;double &#8220;quotes&#8221;', '"double "quotes"'.gilensize
-    assert_equal '&#171;дважды вложенные &#171;кавычки&#187;', '"дважды вложенные "кавычки"'.gilensize
-    assert_equal '&#171;01/02/03&#187;, дискеты в&#160;5.25&#8243;', '"01/02/03", дискеты в 5.25"'.gilensize
-    assert_equal 'после троеточия правая кавычка &#8212; &#171;Вот&#8230;&#187;', 'после троеточия правая кавычка -- "Вот..."'.gilensize
-    assert_equal 'setlocale(LC_ALL, &#8220;ru_RU.UTF8&#8221;);', 'setlocale(LC_ALL, "ru_RU.UTF8");'.gilensize
-    assert_equal '&#8220;read, write, delete&#8221; с&#160;флагом &#8220;only_mine&#8221;', '"read, write, delete" с флагом "only_mine"'.gilensize
-    assert_equal '&#171;Двоеточие:&#187;, &#171;такую умную тему должен писать чувак умеющий скрипты скриптить.&#187;', '"Двоеточие:", "такую умную тему должен писать чувак умеющий скрипты скриптить."'.gilensize
-    assert_equal '(&#171;Вики != HTML&#187; &#8212; &#171;Вики != HTML&#187; &#8212; (&#171;всякая чушь&#187;))', '("Вики != HTML" -- "Вики != HTML" -- ("всякая чушь"))'.gilensize
-    assert_equal '&#171;фигня123&#187;, &#8220;fignya123&#8221;', '"фигня123", "fignya123"'.gilensize
-#      assert_equal '&#171;сбалансированные &#171;кавычки<!--notypo--><!--/notypo--> (четыре в&#160;конце) &#8212; связано с&#160;синтаксисом ваки', '"сбалансированные "кавычки"""" (четыре в конце) -- связано с синтаксисом ваки'.gilensize
-    assert_equal '&#171;несбалансированные &#171;кавычки&#34;&#34;" (три в&#160;конце) &#8212; связано с&#160;синтаксисом ваки', '"несбалансированные "кавычки""" (три в конце) -- связано с синтаксисом ваки'.gilensize
-    assert_equal '&#171;разноязыкие quotes&#187;', '"разноязыкие quotes"'.gilensize
-    assert_equal '&#171;multilanguage кавычки&#187;', '"multilanguage кавычки"'.gilensize
+    assert_equal_entites 'english &#8220;quotes&#8221; should be&#160;quite like this', 'english "quotes" should be quite like this'.gilensize
+    assert_equal_entites 'русские же&#160;&#171;оформляются&#187; подобным образом', 'русские же "оформляются" подобным образом'.gilensize
+    assert_equal_entites 'кавычки &#171;расставлены&#187; &#8220;in a&#160;chaotic order&#8221;', 'кавычки "расставлены" "in a chaotic order"'.gilensize
+    assert_equal_entites 'диагональ моего монитора &#8212; 17&#8243;, а&#160;размер пениса &#8212; 1,5&#8243;', 'диагональ моего монитора -- 17", а размер пениса -- 1,5"'.gilensize
+    assert_equal_entites 'в&#160;толщину, &#171;вложенные &#8220;quotes&#8221; вот&#160;так&#187;, &#8220;or it&#160;&#171;будет вложено&#187; elsewhere&#8221;', 'в толщину, "вложенные "quotes" вот так", "or it "будет вложено" elsewhere"'.gilensize
+    assert_equal_entites '&#8220;complicated &#171;кавычки&#187;, &#171;странные &#8220;includements&#8221; кавычек&#187;', '"complicated "кавычки", "странные "includements" кавычек"'.gilensize
+    assert_equal_entites '&#8220;double &#8220;quotes&#8221;', '"double "quotes"'.gilensize
+    assert_equal_entites '&#171;дважды вложенные &#171;кавычки&#187;', '"дважды вложенные "кавычки"'.gilensize
+    assert_equal_entites '&#171;01/02/03&#187;, дискеты в&#160;5.25&#8243;', '"01/02/03", дискеты в 5.25"'.gilensize
+    assert_equal_entites 'после троеточия правая кавычка &#8212; &#171;Вот&#8230;&#187;', 'после троеточия правая кавычка -- "Вот..."'.gilensize
+    assert_equal_entites 'setlocale(LC_ALL, &#8220;ru_RU.UTF8&#8221;);', 'setlocale(LC_ALL, "ru_RU.UTF8");'.gilensize
+    assert_equal_entites '&#8220;read, write, delete&#8221; с&#160;флагом &#8220;only_mine&#8221;', '"read, write, delete" с флагом "only_mine"'.gilensize
+    assert_equal_entites '&#171;Двоеточие:&#187;, &#171;такую умную тему должен писать чувак умеющий скрипты скриптить.&#187;', '"Двоеточие:", "такую умную тему должен писать чувак умеющий скрипты скриптить."'.gilensize
+    assert_equal_entites '(&#171;Вики != HTML&#187; &#8212; &#171;Вики != HTML&#187; &#8212; (&#171;всякая чушь&#187;))', '("Вики != HTML" -- "Вики != HTML" -- ("всякая чушь"))'.gilensize
+    assert_equal_entites '&#171;фигня123&#187;, &#8220;fignya123&#8221;', '"фигня123", "fignya123"'.gilensize
+    assert_equal_entites '&#171;несбалансированные &#171;кавычки&#34;&#34;" (три в&#160;конце) &#8212; связано с&#160;синтаксисом ваки', '"несбалансированные "кавычки""" (три в конце) -- связано с синтаксисом ваки'.gilensize
+    assert_equal_entites '&#171;разноязыкие quotes&#187;', '"разноязыкие quotes"'.gilensize
+    assert_equal_entites '&#171;multilanguage кавычки&#187;', '"multilanguage кавычки"'.gilensize
   end
 
   def test_additional_quote_cases
-    assert_equal  "&#171;И это&#160;называется языком?&#187;, &#8212; таков был&#160;его вопрос",
+    assert_equal_entites  "&#171;И это&#160;называется языком?&#187;, &#8212; таков был&#160;его вопрос",
                       %q{ "И это называется языком?", -- таков был его вопрос }.gilensize
 
-    assert_equal  "&#171;Он &#8212; сволочь!&#187;, сказал&#160;я",
+    assert_equal_entites  "&#171;Он &#8212; сволочь!&#187;, сказал&#160;я",
                       %q{ "Он -- сволочь!", сказал я }.gilensize
   end
 
   def test_initials
-    assert_equal 'Это&#160;нам сказал П.И.&#8201;Петров', 'Это нам сказал П. И. Петров'.gilensize
+    assert_equal_entites 'Это&#160;нам сказал П.И.&#8201;Петров', 'Это нам сказал П. И. Петров'.gilensize
 
-    assert_equal "А&#160;Ефимов&#8230;",
+    assert_equal_entites "А&#160;Ефимов&#8230;",
       @gilenson.process("А Ефимов...")
 
-    assert_equal "Обратился за&#160;ПО. К&#160;негодяям.",
+    assert_equal_entites "Обратился за&#160;ПО. К&#160;негодяям.",
       @gilenson.process("Обратился за ПО. К негодяям.")
 
-    assert_equal "ГО&#160;Самарской обл.",
+    assert_equal_entites "ГО&#160;Самарской обл.",
       @gilenson.process("ГО Самарской обл.")
 
-    assert_equal "ГОР&#160;Самарской обл.",
+    assert_equal_entites "ГОР&#160;Самарской обл.",
       @gilenson.process("ГОР Самарской обл.")
 
     assert_equal "КОШМАР Самарской обл.",
@@ -173,25 +169,24 @@ class GilensonOwnTest < Test::Unit::TestCase
 
     assert_equal "УФПС Самарской обл.",
       @gilenson.process("УФПС Самарской обл.")
-
   end
 
   def test_nbsp_last_letters
-    assert_equal  "сказал&#160;я", "сказал я".gilensize
-    assert_equal  "сказал&#160;я!", "сказал я!".gilensize
-    assert_equal  "сказал&#160;я?", "сказал я?".gilensize
-    assert_equal  "сказал&#160;я&#8230;", "сказал я...".gilensize
-    assert_equal  "сказал&#160;он&#8230;", "сказал он...".gilensize
-    assert_equal  "сказали&#160;мы?..", "сказали мы?..".gilensize
-    assert_equal  "сказали&#160;мы?!", "сказали мы?!".gilensize
-    assert_equal  "сказали мы?!!!", "сказали мы?!!!".gilensize
-    assert_equal  "сказали нам", "сказали нам".gilensize
-    assert_equal  "(сказали&#160;им)", "(сказали им)".gilensize
-    assert_equal  "Справка&#160;09", 'Справка 09'.gilensize
+    assert_equal_entites  "сказал&#160;я", "сказал я".gilensize
+    assert_equal_entites  "сказал&#160;я!", "сказал я!".gilensize
+    assert_equal_entites  "сказал&#160;я?", "сказал я?".gilensize
+    assert_equal_entites  "сказал&#160;я&#8230;", "сказал я...".gilensize
+    assert_equal_entites  "сказал&#160;он&#8230;", "сказал он...".gilensize
+    assert_equal_entites  "сказали&#160;мы?..", "сказали мы?..".gilensize
+    assert_equal_entites  "сказали&#160;мы?!", "сказали мы?!".gilensize
+    assert_equal_entites  "сказали мы?!!!", "сказали мы?!!!".gilensize
+    assert_equal_entites  "сказали нам", "сказали нам".gilensize
+    assert_equal_entites  "(сказали&#160;им)", "(сказали им)".gilensize
+    assert_equal_entites  "Справка&#160;09", 'Справка 09'.gilensize
   end
 
   def test_wordglue_combined_with_glyphs # http://pixel-apes.com/typografica/trako/12
-    assert_equal "&#171;Справка&#160;09&#187;", '"Справка 09"'.gilensize(:wordglue => true)
+    assert_equal_entites "&#171;Справка&#160;09&#187;", '"Справка 09"'.gilensize(:wordglue => true)
   end
 
   def test_marker_bypass
@@ -261,15 +256,15 @@ class GilensonOwnTest < Test::Unit::TestCase
   end
 
   def test_escape_html
-    assert_equal "Используйте &#38; вместо &#38;amp;",
+    assert_equal_entites "Используйте &#38; вместо &#38;amp;",
       @gilenson.process("Используйте &#38; вместо &#38;amp;")
 
     @gilenson.configure!(:html => false)
 
-    assert_equal "&#38;#38; &#8212; &#38;amp; &#60;code/&#62; &#60;some_tag&#62;таги не&#160;пройдут!&#60;/some_tag&#62;. Ну&#160;и?..",
+    assert_equal_entites "&#38;#38; &#8212; &#38;amp; &#60;code/&#62; &#60;some_tag&#62;таги не&#160;пройдут!&#60;/some_tag&#62;. Ну&#160;и?..",
       @gilenson.process("&#38; -- &amp; <code/> <some_tag>таги не пройдут!</some_tag>. Ну и?..")
 
-    assert_equal "Используйте &#38;#38; вместо &#38;amp;",
+    assert_equal_entites "Используйте &#38;#38; вместо &#38;amp;",
       @gilenson.process("Используйте &#38; вместо &amp;")
 
   end
@@ -346,37 +341,37 @@ class GilensonConfigurationTest < Test::Unit::TestCase
 
   def test_settings_as_tail_arguments
 
-    assert_equal "Ну&#160;и куда вот&#160;&#8212; да&#160;туда!",
+    assert_equal_entites "Ну&#160;и куда вот&#160;&#8212; да&#160;туда!",
       @gilenson.process("Ну и куда вот -- да туда!")
 
-    assert_equal "Ну и куда вот &#8212; да туда!",
+    assert_equal_entites "Ну и куда вот &#8212; да туда!",
       @gilenson.process("Ну и куда вот -- да туда!", :dash => false, :dashglue => false, :wordglue => false)
 
-    assert_equal "Ну&#160;и куда вот&#160;&#8212; да&#160;туда!",
+    assert_equal_entites "Ну&#160;и куда вот&#160;&#8212; да&#160;туда!",
       @gilenson.process("Ну и куда вот -- да туда!")
 
     @gilenson.configure!(:dash => false, :dashglue => false, :wordglue => false)
 
-    assert_equal "Ну и куда вот &#8212; да туда!",
+    assert_equal_entites "Ну и куда вот &#8212; да туда!",
       @gilenson.process("Ну и куда вот -- да туда!")
 
     @gilenson.configure!(:all => true)
 
-    assert_equal "Ну&#160;и куда вот&#160;&#8212; да&#160;туда!",
+    assert_equal_entites "Ну&#160;и куда вот&#160;&#8212; да&#160;туда!",
       @gilenson.process("Ну и куда вот -- да туда!")
 
     @gilenson.configure!(:all => false)
 
-    assert_equal "Ну и куда вот -- да туда!",
+    assert_equal_entites "Ну и куда вот -- да туда!",
       @gilenson.process("Ну и куда вот -- да туда!")
   end
 
   def test_glyph_override
-    assert_equal 'скажи, мне, ведь не&#160;даром! Москва, клеймённая пожаром. Французу отдана',
+    assert_equal_entites 'скажи, мне, ведь не&#160;даром! Москва, клеймённая пожаром. Французу отдана',
       @gilenson.process('скажи ,мне, ведь не даром !Москва, клеймённая пожаром .Французу отдана')
 
     @gilenson.glyph[:nbsp] = '&nbsp;'
-    assert_equal 'скажи, мне, ведь не&nbsp;даром! Москва, клеймённая пожаром. Французу отдана',
+    assert_equal_entites 'скажи, мне, ведь не&nbsp;даром! Москва, клеймённая пожаром. Французу отдана',
       @gilenson.process('скажи ,мне, ведь не даром !Москва, клеймённая пожаром .Французу отдана')
   end
 
@@ -389,7 +384,7 @@ class GilensonConfigurationTest < Test::Unit::TestCase
   end
 
   def test_backslash_does_not_suppress_quote # http://pixel-apes.com/typografica/trako/13, но с латинскими кавычками
-    assert_equal "&#8220;c:\\www\\sites\\&#8221;", '"c:\www\sites\"'.gilensize
+    assert_equal_entites "&#8220;c:\\www\\sites\\&#8221;", '"c:\www\sites\"'.gilensize
   end
 
   def test_cpp
@@ -398,7 +393,7 @@ class GilensonConfigurationTest < Test::Unit::TestCase
 
   def test_raw_utf8_output
     @gilenson.configure!(:raw_output=>true)
-    assert_equal '&#38442; Это просто «кавычки»',
+    assert_equal_entites '&#38442; Это просто «кавычки»',
       @gilenson.process('&#38442; Это просто "кавычки"')
   end
 
@@ -410,6 +405,6 @@ class GilensonConfigurationTest < Test::Unit::TestCase
   def test_customized_nobr
     @gilenson.glyph[:nob_open] = '[NOB]'
     @gilenson.glyph[:nob_close] = '[NOBC]'
-    assert_equal '[NOB]3&#8211;12&#8211;30[NOBC]', @gilenson.process('3-12-30')
+    assert_equal_entites '[NOB]3&#8211;12&#8211;30[NOBC]', @gilenson.process('3-12-30')
   end
 end
