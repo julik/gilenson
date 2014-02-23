@@ -1,12 +1,12 @@
 #!/usr/bin/env ruby
 # == Synopsis
-# 
+#
 # Processes text on standard input with Gilenson. Please feed it UTF-8!
-# 
+#
 # == Usage
-# 
+#
 #   cat myfile.txt | gilensize > output.txt
-#   
+#
 # == Author
 #   Julik <me@julik.nl>
 

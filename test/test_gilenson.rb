@@ -1,4 +1,4 @@
-# -*- encoding: utf-8 -*- 
+# -*- encoding: utf-8 -*-
 require 'test/unit'
 
 class A_TestRequireDoesNotReconfigureKcode < Test::Unit::TestCase
@@ -19,7 +19,7 @@ $KCODE = 'u' if RUBY_VERSION < '1.9.0'
 # Cюда идут наши тесты типографа. Мы содержим их отдельно поскольку набор тестов Типографицы нами не контролируется.
 # Когда у рутилей появятся собственные баги под каждый баг следует завести тест
 class GilensonOwnTest < Test::Unit::TestCase
-  
+
   def setup
     $KCODE = 'u' if RUBY_VERSION < '1.9.0'
     @gilenson = Gilenson.new
@@ -28,7 +28,7 @@ class GilensonOwnTest < Test::Unit::TestCase
   def test_tag_lift
     assert_equal "Вот&#160;такие<tag some='foo>' />  <tagmore></tagmore> дела", "Вот такие<tag some='foo>' />  <tagmore></tagmore> дела".gilensize
   end
-  
+
   def test_byte_pass
     assert_equal '<p>Теперь добираться до офиса Студии автортранспортом стало удобнее. ' +
                   'Для этого мы разместили в разделе <a href="#">«Контакт»</a> окно вебкамеры, ' +
@@ -60,15 +60,15 @@ class GilensonOwnTest < Test::Unit::TestCase
     @gilenson.configure(:raw_output => false)
     assert_equal '<acronym title="Знак &#60;">БВГ</acronym>', 'БВГ(Знак <)'.gilensize
   end
-  
+
   def test_acronyms_with_text_output
     @gilenson.configure(:raw_output => true)
     thin_space = [8201].pack("U")
     assert_equal_cp "так утверждает БСЭ#{thin_space}(Большая советская энциклопедия)",
       @gilenson.process('так утверждает БСЭ(Большая советская энциклопедия)')
   end
-  
-  def test_address  
+
+  def test_address
     assert_equal 'табл.&#160;2, рис.&#160;2.10', 'табл. 2, рис. 2.10'.gilensize
     assert_equal 'офис&#160;415, оф.340, д.5, ул.&#160;Народной Воли, пл. Малышева', 'офис 415, оф.340, д.5, ул. Народной Воли, пл. Малышева'.gilensize
   end
@@ -80,7 +80,7 @@ class GilensonOwnTest < Test::Unit::TestCase
   def test_non_displayable_entities_replace1 # not_correct_number
     assert_equal '&#8222; &#8230; &#39; &#8220; &#8221; &#8226; &#8211; &#8212; &#8482;', '&#132; &#133; &#146; &#147; &#148; &#149; &#150; &#151; &#153;'.gilensize
   end
-  
+
   def test_non_displayable_entities_replace2 # copy&paste
     @gilenson.configure!(:copypaste => true)
     assert_equal '&#171; &#160; &#187; &#167; &#169; &#174; &#176; &#177; &#182; &#183; &#8211; &#8212; &#8216; &#8217; &#8220; &#8221; &#8222; &#8226; &#8230; &#8470; &#8482; &#8722; &#8201; &#8243;', @gilenson.process('«   » § © ® ° ± ¶ · – — ‘ ’ “ ” „ • … № ™ −   ″')
@@ -93,7 +93,7 @@ class GilensonOwnTest < Test::Unit::TestCase
   def test_nbsp_removed_on_anchor_end
     assert_equal 'abcd', @gilenson.process('abcd ')
   end
-  
+
   def test_specials
     assert_equal '&#169;Кукуц', '(c)Кукуц'.gilensize
     assert_equal '&#169; 2002, &#169; 2003, &#169; 2004, &#169; 2005 &#8212; тоже без&#160;пробелов: &#169;2002, &#169;Кукуц. однако: варианты (а) и&#160;(с)', '(с) 2002, (С) 2003, (c) 2004, (C) 2005 -- тоже без пробелов: (с)2002, (c)Кукуц. однако: варианты (а) и (с)'.gilensize
@@ -109,21 +109,21 @@ class GilensonOwnTest < Test::Unit::TestCase
     assert_equal 'при&#160;установке командой строки в&#160;?page=help <span class="nobr">бла-бла-бла-бла</span>', 'при установке командой строки в ?page=help бла-бла-бла-бла'.gilensize
     assert_equal 'как&#160;интересно будет переноситься со&#160;строки на&#160;строку <span class="nobr">что-то</span> разделённое дефисом, ведь дефис тот&#160;тоже ведь из&#160;наших. <span class="nobr">Какие-то</span> браузеры думают, что&#160;следует переносить и&#160;его&#8230;', 'как интересно будет переноситься со строки на строку что-то разделённое дефисом, ведь дефис тот тоже ведь из наших. Какие-то браузеры думают, что следует переносить и его...'.gilensize
   end
-  
+
   def test_forced_quotes
     assert_equal 'кавычки &#171;расставлены&#187; &#8220;in a&#160;chaotic order&#8221;',
       'кавычки "расставлены" "in a chaotic order"'.gilensize
-    assert_equal 'кавычки &#8220;расставлены&#8221; &#8220;in a&#160;chaotic order&#8221;', 
+    assert_equal 'кавычки &#8220;расставлены&#8221; &#8220;in a&#160;chaotic order&#8221;',
       'кавычки "расставлены" "in a chaotic order"'.gilensize(:enforce_en_quotes => true)
-    assert_equal 'кавычки &#171;расставлены&#187; &#171;in a&#160;chaotic order&#187;', 
+    assert_equal 'кавычки &#171;расставлены&#187; &#171;in a&#160;chaotic order&#187;',
       'кавычки "расставлены" "in a chaotic order"'.gilensize(:enforce_ru_quotes => true)
   end
-  
+
 #def test_quotes_and_inch
 #  assert_equal "&#171;This one&#160;is&#160;12&#8342;&#187;", '"This one is 12""'.gilensize
 #end
-  
-  def test_quotes  
+
+  def test_quotes
     assert_equal 'english &#8220;quotes&#8221; should be&#160;quite like this', 'english "quotes" should be quite like this'.gilensize
     assert_equal 'русские же&#160;&#171;оформляются&#187; подобным образом', 'русские же "оформляются" подобным образом'.gilensize
     assert_equal 'кавычки &#171;расставлены&#187; &#8220;in a&#160;chaotic order&#8221;', 'кавычки "расставлены" "in a chaotic order"'.gilensize
@@ -146,10 +146,10 @@ class GilensonOwnTest < Test::Unit::TestCase
   end
 
   def test_additional_quote_cases
-    assert_equal  "&#171;И это&#160;называется языком?&#187;, &#8212; таков был&#160;его вопрос", 
+    assert_equal  "&#171;И это&#160;называется языком?&#187;, &#8212; таков был&#160;его вопрос",
                       %q{ "И это называется языком?", -- таков был его вопрос }.gilensize
 
-    assert_equal  "&#171;Он &#8212; сволочь!&#187;, сказал&#160;я", 
+    assert_equal  "&#171;Он &#8212; сволочь!&#187;, сказал&#160;я",
                       %q{ "Он -- сволочь!", сказал я }.gilensize
   end
 
@@ -167,10 +167,10 @@ class GilensonOwnTest < Test::Unit::TestCase
 
     assert_equal "ГОР&#160;Самарской обл.",
       @gilenson.process("ГОР Самарской обл.")
-    
+
     assert_equal "КОШМАР Самарской обл.",
       @gilenson.process("КОШМАР Самарской обл.")
-    
+
     assert_equal "УФПС Самарской обл.",
       @gilenson.process("УФПС Самарской обл.")
 
@@ -189,11 +189,11 @@ class GilensonOwnTest < Test::Unit::TestCase
     assert_equal  "(сказали&#160;им)", "(сказали им)".gilensize
     assert_equal  "Справка&#160;09", 'Справка 09'.gilensize
   end
-  
+
   def test_wordglue_combined_with_glyphs # http://pixel-apes.com/typografica/trako/12
     assert_equal "&#171;Справка&#160;09&#187;", '"Справка 09"'.gilensize(:wordglue => true)
   end
-  
+
   def test_marker_bypass
     assert_equal "<p><span class=\"nobr\">МИЭЛЬ-Недвижимость</span></p>",
       "<p>МИЭЛЬ-Недвижимость</p>".gilensize,
@@ -202,125 +202,125 @@ class GilensonOwnTest < Test::Unit::TestCase
       "<p><span class=\"nobr\">МИЭЛЬ-Недвижимость</span></p>".gilensize,
       "Секция nobr должна быть проставлена единожды"
   end
-  
+
   def test_skip_code
     @gilenson.configure!(:all => true, :skip_code => true)
-    
+
     assert_equal "<code>Скип -- скип!</code>",
       @gilenson.process("<code>Скип -- скип!</code>")
-    
+
     assert_equal '<code attr="test -- attr">Скип -- скип!</code>',
       @gilenson.process('<code attr="test -- attr">Скип -- скип!</code>')
-    
+
     assert_equal "<tt>Скип -- скип!</tt> test &#8212; test <tt attr='test -- attr'>Скип -- скип!</tt>",
       @gilenson.process("<tt>Скип -- скип!</tt> test -- test <tt attr='test -- attr'>Скип -- скип!</tt>")
-    
+
     assert_equal "<tt>Скип -- скип!</tt><tt>Скип -- скип!</tt> &#8212; <code attr='test -- attr'>Скип -- скип!</code>",
       @gilenson.process("<tt>Скип -- скип!</tt><tt>Скип -- скип!</tt> -- <code attr='test -- attr'>Скип -- скип!</code>")
-    
+
     assert_equal "<ttt>Скип &#8212; скип!</tt>",
       @gilenson.process("<ttt>Скип -- скип!</tt>")
-    
+
     assert_equal "<tt>Скип &#8212; скип!</ttt>",
       @gilenson.process("<tt>Скип -- скип!</ttt>")
-    
+
     assert_equal "Ах, &#8212; <code>var x = j // -- тест</code>",
       @gilenson.process("Ах, -- <code>var x = j // -- тест</code>")
-    
+
     assert_equal "<![CDATA[ CDATA -- ]]> &#8212; CDATA",
       @gilenson.process("<![CDATA[ CDATA -- ]]> -- CDATA")
-    
+
     assert_equal "<![CDATA[ CDATA -- >] -- CDATA ]]> &#8212; <![CDATA[ CDATA ]> -- CDATA ]]>",
       @gilenson.process("<![CDATA[ CDATA -- >] -- CDATA ]]> -- <![CDATA[ CDATA ]> -- CDATA ]]>")
-    
+
     assert_equal "<![CDATA[ CDATA -- >] -- CDATA ]]> &#8212; <![CDATA[ CDATA ]> -- CDATA ]]>  &#8212; CDATA ]]>",
       @gilenson.process("<![CDATA[ CDATA -- >] -- CDATA ]]> -- <![CDATA[ CDATA ]> -- CDATA ]]>  -- CDATA ]]>")
-    
+
     @gilenson.configure!(:skip_code => false)
-    
+
     assert_equal "Ах, &#8212; <code>var x&#160;= j&#160;// &#8212; тест</code>",
       @gilenson.process("Ах, -- <code>var x = j // -- тест</code>")
   end
 
   def test_skip_attr
     @gilenson.configure!(:skip_attr => true)
-    
+
     assert_equal "<a href='#' attr='смотри -- смотри' title='test -- me' alt=\"смотри -- смотри\">just &#8212; test</a>",
       @gilenson.process("<a href='#' attr='смотри -- смотри' title='test -- me' alt=\"смотри -- смотри\">just -- test</a>")
-    
+
     assert_equal 'мы&#160;напишем title="test &#8212; me" и&#160;alt=\'test &#8212; me\', вот',
       @gilenson.process('мы напишем title="test -- me" и alt=\'test -- me\', вот')
-    
+
     @gilenson.configure!(:skip_attr => false)
-    
+
     assert_equal "<a href='#' attr='смотри -- смотри' title='test &#8212;&#160;me' alt=\"смотри &#8212; смотри\">just &#8212; test</a>",
       @gilenson.process("<a href='#' attr='смотри -- смотри' title='test -- me' alt=\"смотри -- смотри\">just -- test</a>")
-    
+
     assert_equal 'мы&#160;напишем title="test &#8212; me" и&#160;alt=\'test &#8212; me\', вот',
       @gilenson.process('мы напишем title="test -- me" и alt=\'test -- me\', вот')
   end
-  
+
   def test_escape_html
     assert_equal "Используйте &#38; вместо &#38;amp;",
       @gilenson.process("Используйте &#38; вместо &#38;amp;")
-    
+
     @gilenson.configure!(:html => false)
-    
+
     assert_equal "&#38;#38; &#8212; &#38;amp; &#60;code/&#62; &#60;some_tag&#62;таги не&#160;пройдут!&#60;/some_tag&#62;. Ну&#160;и?..",
       @gilenson.process("&#38; -- &amp; <code/> <some_tag>таги не пройдут!</some_tag>. Ну и?..")
-    
+
     assert_equal "Используйте &#38;#38; вместо &#38;amp;",
       @gilenson.process("Используйте &#38; вместо &amp;")
-    
+
   end
 
   def test_ampersand_in_urls
-    
+
     @gilenson.configure!(:html=>false)
-    
+
     assert_equal "&#60;a href='test?test5=5&#38;#38;test6=6'&#62;test&#38;#38;&#60;/a&#62;",
       @gilenson.process("<a href='test?test5=5&#38;test6=6'>test&#38;</a>")
-    
+
     @gilenson.configure!(:html=>true)
-    
+
     assert_equal "<a href='test?test7=7&#38;test8=8'>test&#38;</a>",
       @gilenson.process("<a href='test?test7=7&#38;test8=8'>test&#38;</a>")
-    
+
     assert_equal "<a href='test?test9=9&#038;test10=10'>test&#038;</a>",
       @gilenson.process("<a href='test?test9=9&#038;test10=10'>test&#038;</a>")
-    
+
     assert_equal "<a href='test?test11=11&#38;test12=12'>test&</a>",
       @gilenson.process("<a href='test?test11=11&test12=12'>test&</a>")
-    
+
     assert_equal "<a href='test?test12=12&#38;'>test</a>",
       @gilenson.process("<a href='test?test12=12&amp;'>test</a>")
-    
+
     assert_equal "<a href='test?x=1&#38;y=2' title='&#38;-amp, &#8230;-hellip'>test</a>",
       @gilenson.process("<a href='test?x=1&y=2' title='&#38;-amp, &#8230;-hellip'>test</a>")
-    
+
     assert_equal "<a href='test?x=3&#38;#039;y=4'>test</a>",
       @gilenson.process("<a href='test?x=3&#039;y=4'>test</a>")
-    
-    
+
+
     @gilenson.glyph[:amp] = '&amp;'
-    
+
     assert_equal "<a href='test?test11=11&amp;test12=12'>test&</a>",
       @gilenson.process("<a href='test?test11=11&test12=12'>test&</a>")
-    
+
     assert_equal "<a href='test?test13=13&amp;test14=14'>test&</a>",
       @gilenson.process("<a href='test?test13=13&amp;test14=14'>test&</a>")
-    
+
     assert_equal "<a href='test?test15=15&amp;amppp;test16=16'>test&</a>",
       @gilenson.process("<a href='test?test15=15&amppp;test16=16'>test&</a>")
-    
+
   end
-  
+
   private
     # Проверить равны ли строки, и если нет то обьяснить какой кодпойнт отличается.
     # Совершенно необходимо для работы с различными пробелами.
     def assert_equal_cp(reference, actual, msg = "Should be the same codepoint")
       (assert(true, msg); return) if (reference == actual)
-      
+
       reference_cp, actual_cp = [reference, actual].map{|t| t.unpack("U*") }
       reference_cp.each_with_index do | ref_codepoint, idx |
         next unless actual_cp[idx] != ref_codepoint
@@ -343,34 +343,34 @@ class GilensonConfigurationTest < Test::Unit::TestCase
   def setup
     @gilenson = Gilenson.new
   end
-  
+
   def test_settings_as_tail_arguments
 
-    assert_equal "Ну&#160;и куда вот&#160;&#8212; да&#160;туда!", 
+    assert_equal "Ну&#160;и куда вот&#160;&#8212; да&#160;туда!",
       @gilenson.process("Ну и куда вот -- да туда!")
 
-    assert_equal "Ну и куда вот &#8212; да туда!", 
+    assert_equal "Ну и куда вот &#8212; да туда!",
       @gilenson.process("Ну и куда вот -- да туда!", :dash => false, :dashglue => false, :wordglue => false)
 
-    assert_equal "Ну&#160;и куда вот&#160;&#8212; да&#160;туда!", 
+    assert_equal "Ну&#160;и куда вот&#160;&#8212; да&#160;туда!",
       @gilenson.process("Ну и куда вот -- да туда!")
-      
+
     @gilenson.configure!(:dash => false, :dashglue => false, :wordglue => false)
 
-    assert_equal "Ну и куда вот &#8212; да туда!", 
-      @gilenson.process("Ну и куда вот -- да туда!")    
+    assert_equal "Ну и куда вот &#8212; да туда!",
+      @gilenson.process("Ну и куда вот -- да туда!")
 
     @gilenson.configure!(:all => true)
 
-    assert_equal "Ну&#160;и куда вот&#160;&#8212; да&#160;туда!", 
+    assert_equal "Ну&#160;и куда вот&#160;&#8212; да&#160;туда!",
       @gilenson.process("Ну и куда вот -- да туда!")
 
     @gilenson.configure!(:all => false)
 
-    assert_equal "Ну и куда вот -- да туда!", 
+    assert_equal "Ну и куда вот -- да туда!",
       @gilenson.process("Ну и куда вот -- да туда!")
   end
-  
+
   def test_glyph_override
     assert_equal 'скажи, мне, ведь не&#160;даром! Москва, клеймённая пожаром. Французу отдана',
       @gilenson.process('скажи ,мне, ведь не даром !Москва, клеймённая пожаром .Французу отдана')
@@ -379,34 +379,34 @@ class GilensonConfigurationTest < Test::Unit::TestCase
     assert_equal 'скажи, мне, ведь не&nbsp;даром! Москва, клеймённая пожаром. Французу отдана',
       @gilenson.process('скажи ,мне, ведь не даром !Москва, клеймённая пожаром .Французу отдана')
   end
-  
+
   def test_raise_on_unknown_setting
     assert_raise(Gilenson::UnknownSetting) { @gilenson.configure!(:bararara => true) }
   end
-  
+
   def test_raise_on_unknown_setting_via_gilensize
     assert_raise(Gilenson::UnknownSetting) { "s".gilensize(:bararara => true) }
   end
-  
+
   def test_backslash_does_not_suppress_quote # http://pixel-apes.com/typografica/trako/13, но с латинскими кавычками
     assert_equal "&#8220;c:\\www\\sites\\&#8221;", '"c:\www\sites\"'.gilensize
   end
-  
+
   def test_cpp
     assert_equal "C++-API", "C++-API".gilensize
   end
-  
+
   def test_raw_utf8_output
     @gilenson.configure!(:raw_output=>true)
     assert_equal '&#38442; Это просто «кавычки»',
-      @gilenson.process('&#38442; Это просто "кавычки"')    
+      @gilenson.process('&#38442; Это просто "кавычки"')
   end
-  
+
   def test_configure_alternate_names
-    assert @gilenson.configure(:raw_output=>true)    
-    assert @gilenson.configure!(:raw_output=>true)    
+    assert @gilenson.configure(:raw_output=>true)
+    assert @gilenson.configure!(:raw_output=>true)
   end
-  
+
   def test_customized_nobr
     @gilenson.glyph[:nob_open] = '[NOB]'
     @gilenson.glyph[:nob_close] = '[NOBC]'
