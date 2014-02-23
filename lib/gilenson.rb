@@ -5,12 +5,6 @@ if RUBY_VERSION < '1.9.0'
 end
 
 class Gilenson
-  VERSION = '1.2.2'
-  autoload :BlueClothExtra, File.dirname(__FILE__) + '/extras/bluecloth_extra'
-  autoload :RedClothExtra, File.dirname(__FILE__) + '/extras/redcloth_extra'
-  autoload :RDiscountExtra, File.dirname(__FILE__) + '/extras/rdiscount_extra'
-  autoload :MarukuExtra, File.dirname(__FILE__) + '/extras/maruku_extra'
-
   attr_accessor :glyph
   attr_accessor :settings
 

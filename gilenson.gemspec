@@ -21,12 +21,4 @@ Gem::Specification.new do |spec|
 
   spec.add_development_dependency "bundler", "~> 1.5"
   spec.add_development_dependency "rake"
-
-  # Gilenson на прямую не зависит от форматтеров,
-  # он просто с ними интегрируется. Они нужны
-  # только для тестиоования интеграции
-  spec.add_development_dependency "rdiscount",  ">= 0"
-  spec.add_development_dependency "maruku",     "~> 0.6"
-  spec.add_development_dependency "RedCloth",   "~> 4.2"
-  spec.add_development_dependency "bluecloth",  "~> 2.0"
 end
