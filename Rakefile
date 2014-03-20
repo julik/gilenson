@@ -1,25 +1,11 @@
-# -*- encoding: utf-8 -*-
-# -*- ruby -*-
-$KCODE = 'u' if RUBY_VERSION < '1.9.0'
+# coding: utf-8
+$:.push File.expand_path("../lib", __FILE__)
 
-require 'rubygems'
-require 'jeweler'
-require './lib/gilenson'
-
-Jeweler::Tasks.new do |gem|
-  gem.version = Gilenson::VERSION
-  gem.name = "gilenson"
-  gem.summary = "Гиленсон - улучшайзер русской типографики"
-  gem.email = "me@julik.nl"
-  gem.homepage = "http://github.com/julik/gilenson"
-  gem.authors = ["Julik Tarkhanov"]
-  gem.license = 'MIT'
-  gem.executables = %w( gilensize )
-end
-
-Jeweler::RubygemsDotOrgTasks.new
+require "bundler/gem_tasks"
 
 require 'rake/testtask'
+require "gilenson"
+
 desc "Run all tests"
 Rake::TestTask.new("test") do |t|
   t.libs << "test"
@@ -28,5 +14,3 @@ Rake::TestTask.new("test") do |t|
 end
 
 task :default => [ :test ]
-
-# vim: syntax=ruby
